@@ -12,6 +12,7 @@ Engine::Engine(const std::string &configFile){
 }
 
 bool Engine::load_config_file(const std::string &configFile){
+    //TODO add an error management
     YAML::Node file = YAML::LoadFile(configFile);
     _width = file["Window"]["Width"].as<int>();
     _height = file["Window"]["Height"].as<int>();

@@ -67,7 +67,7 @@ public:
     typedef std::shared_ptr<Entity> Ptr;
     typedef std::shared_ptr<const Entity> ConstPtr;
 
-    typedef std::unordered_map<std::string,Types::Ptr>_property_t;
+    typedef std::unordered_map<std::string,Types::Ptr> _property_t;
 
     Entity(){
         _behavior = [](_property_t){};
@@ -82,7 +82,7 @@ public:
         _property.emplace("velocity",INTEGER_PTR(v));
         _property.emplace("width",INTEGER_PTR(w));
         _property.emplace("height",INTEGER_PTR(h));
-        _property.emplace("angle",FLOAT_PTR(0));
+        _property.emplace("angle",DOUBLE_PTR(0));
         _property.emplace("frame",INTEGER_PTR(0));
     }
 

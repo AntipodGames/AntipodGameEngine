@@ -151,7 +151,8 @@ protected:
                     spriteNode["width"].as<int>(),
                     spriteNode["height"].as<int>(),
                     spriteNode["center_pos"]["x"].as<int>(),
-                    spriteNode["center_pos"]["y"].as<int>()));
+                    spriteNode["center_pos"]["y"].as<int>(),
+                    0));
         }
     }
 

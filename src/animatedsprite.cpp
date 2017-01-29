@@ -1,8 +1,29 @@
 #include "AGE/animatedsprite.h"
 #include "QString"
 #include "QTextStream"
+#include "yaml-cpp/yaml.h"
 
 using namespace age;
+
+//TODO Clean this class. In particular the constructor. One must remain ! (with default and copy of course)
+//also reduce dependancies to QT
+
+AnimatedSprite::AnimatedSprite(TextureManager &TM, std::string anim_yml, std::string sprite, int width, int height, int centreX, int centreY){
+    image.setTexture(*(TM.GetTexture(sprite)));
+
+    //TODO create animation graph
+    YAML::Node yaml_file = YAML::LoadFile(anim_yml);
+    YAML::Node anim_graph = yaml_file["animation_graph"];
+
+
+    float scale1 = ((float)width*nbrFrame)/(float)image.getTexture()->getSize().x;
+    float scale2 = (float)height/(float)image.getTexture()->getSize().y;
+
+    image.setScale(scale1,scale2);
+
+    image.setOrigin(image.getTexture()->getSize().x/(centreX*nbrFrame),image.getTexture()->getSize().y/centreY);
+    image.setTextureRect(sf::IntRect(0,0,image.getTexture()->getSize().x/nbrFrame,image.getTexture()->getSize().y));
+}
 
 /**
  * Constructeur d'image animé
@@ -28,9 +49,10 @@ AnimatedSprite::AnimatedSprite(TextureManager & TM, std::string adr,int nbrF, in
     frame = 1;
     cpt = 0;
     nbrFrame = nbrF;
-    scale = ((float)width*nbrFrame)/(float)image.getTexture()->getSize().x;
+    float scale1 = ((float)width*nbrFrame)/(float)image.getTexture()->getSize().x;
+    float scale2 = (float)height/(float)image.getTexture()->getSize().y;
 
-    image.setScale(scale,scale);
+    image.setScale(scale1,scale2);
 
     image.setOrigin(image.getTexture()->getSize().x/(centreX*nbrFrame),image.getTexture()->getSize().y/centreY);
     image.setTextureRect(sf::IntRect(0,0,image.getTexture()->getSize().x/nbrFrame,image.getTexture()->getSize().y));

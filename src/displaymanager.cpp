@@ -24,7 +24,7 @@ void DisplayManager::_apply(AnimatedManager &am, Entity::_property_t prop){
     am.get(name).setFrame(TO_INTEGER(prop["frame"])->value);
     am.get(name).setPosition(TO_INTEGER(prop["x"])->value,
                              TO_INTEGER(prop["y"])->value);
-    am.get(name).setAngle(TO_FLOAT(prop["angle"])->value);
+    am.get(name).setAngle(TO_DOUBLE(prop["angle"])->value);
     am.get(name).resize(TO_INTEGER(prop["width"])->value,
                         TO_INTEGER(prop["height"])->value);
 }
