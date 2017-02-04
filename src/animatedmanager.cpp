@@ -7,15 +7,15 @@ void AnimatedManager::add(const std::string& label, AnimatedSprite image){
     BDD.insert(std::make_pair(label,image));
 
 
-    if(frameBDD.contains(label)){
-        QVector<int> tmp(frameBDD.value(label));
-        tmp.append(1);
-        frameBDD.insert(label,tmp);
+    if(frameBDD.find(label) != frameBDD.end()){
+        std::vector<int> tmp(frameBDD[label]);
+        tmp.push_back(1);
+        frameBDD.emplace(label,tmp);
     }
     else{
-        QVector<int> tmp;
-        tmp.append(1);
-        frameBDD.insert(label,tmp);
+        std::vector<int> tmp;
+        tmp.push_back(1);
+        frameBDD.emplace(label,tmp);
     }
 }
 
@@ -29,22 +29,22 @@ void AnimatedManager::set(const std::string& label, const std::string& lbl){
 }
 
 void AnimatedManager::changeFrame(const std::string& label, int n){
-    QVector<int> tmp(frameBDD[label]);
+    std::vector<int> tmp(frameBDD[label]);
     AnimatedSprite tmpS(BDD[label]);
     if(tmp[n] >= tmpS.getNbrFrame())
         tmp[n] == 0;
 
     tmp[n]+=1;
 
-    frameBDD.insert(label,tmp);
+    frameBDD.emplace(label,tmp);
 }
 
 void AnimatedManager::deleteFrame(const std::string& label, int n){
-    QVector<int> tmp(frameBDD[label]);
+    std::vector<int> tmp(frameBDD[label]);
 
-    tmp.remove(n);
-    tmp.squeeze();
+    tmp.erase(tmp.begin() + n);
+    tmp.shrink_to_fit();
 
-    frameBDD.insert(label,tmp);
+    frameBDD.emplace(label,tmp);
 
 }

@@ -1,20 +1,18 @@
 #include "AGE/animatedsprite.h"
-#include "QString"
-#include "QTextStream"
-#include "yaml-cpp/yaml.h"
 
 using namespace age;
 
 //TODO Clean this class. In particular the constructor. One must remain ! (with default and copy of course)
-//also reduce dependancies to QT
 
-AnimatedSprite::AnimatedSprite(TextureManager &TM, std::string anim_yml, std::string sprite, int width, int height, int centreX, int centreY){
+AnimatedSprite::AnimatedSprite(TextureManager &TM, std::string sprite,
+                               std::string anim_yml, int width, int height,
+                               int centreX, int centreY){
     image.setTexture(*(TM.GetTexture(sprite)));
 
     //TODO create animation graph
     YAML::Node yaml_file = YAML::LoadFile(anim_yml);
     YAML::Node anim_graph = yaml_file["animation_graph"];
-
+    _anim_graph = _animation_graph(anim_graph);
 
     float scale1 = ((float)width*nbrFrame)/(float)image.getTexture()->getSize().x;
     float scale2 = (float)height/(float)image.getTexture()->getSize().y;
@@ -178,4 +176,18 @@ int AnimatedSprite::getScale(){
 void AnimatedSprite::resize(int x, int y){
     image.setScale((float)(x*nbrFrame)/((float)image.getTexture()->getSize().x)
                    ,((float)y)/((float)image.getTexture()->getSize().y));
+}
+
+AnimatedSprite::_animation_graph::_animation_graph(const YAML::Node &yaml_node){
+
+    for(auto it = yaml_node.begin(); it != yaml_node.end(); ++it){
+        _states_desc_t description;
+        description.nbr_frames = it->second["nbr_frames"].as<int>();
+        description.neighbors = std::vector<std::string>(it->second["neighbors"].size());
+        for(size_t i  = 0; i < it->second["neighbors"].size(); i++)
+            description.neighbors[i] = it->second["neighbors"][i].as<std::string>();
+        description.position = it->second["position"].as<int>();
+        description.time_per_frame = it->second["time_per_frame"].as<float>();
+        _graph.emplace(it->first.as<std::string>(),description);
+    }
 }

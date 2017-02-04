@@ -25,7 +25,7 @@ public:
 
 private:
     std::map <std::string ,AnimatedSprite> BDD;
-    QMap <std::string ,QVector<int> > frameBDD;
+    std::map <std::string ,std::vector<int> > frameBDD;
 };
 }//age
 
