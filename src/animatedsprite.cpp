@@ -16,6 +16,7 @@ AnimatedSprite::AnimatedSprite(TextureManager &TM, std::string anim_yml, std::st
     YAML::Node anim_graph = yaml_file["animation_graph"];
 
 
+
     float scale1 = ((float)width*nbrFrame)/(float)image.getTexture()->getSize().x;
     float scale2 = (float)height/(float)image.getTexture()->getSize().y;
 
