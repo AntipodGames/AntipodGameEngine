@@ -1,9 +1,7 @@
 #ifndef ANIMATEDSPRITE_H
 #define ANIMATEDSPRITE_H
-#include <QVector>
 #include <SFML/Graphics.hpp>
 #include <AGE/texturemanager.h>
-#include <QFile>
 #include <stack>
 #include <yaml-cpp/yaml.h>
 
@@ -16,7 +14,7 @@ class AnimatedSprite
 public:
     AnimatedSprite(){}
 
-    AnimatedSprite(TextureManager &TM, std::string anim_yml, std::string sprite, int width, int height, int centreX, int centreY);
+    AnimatedSprite(TextureManager &TM, std::string sprite, std::string anim_yml, int width, int height, int centreX, int centreY);
     AnimatedSprite(TextureManager &TM, std::string adr, int nrbF,int width, int height, int centreX, int centreY,int timer);
     AnimatedSprite(TextureManager &TM, std::string adr, int nrbF, int size, int centreX, int centreY,int timer);
     AnimatedSprite(TextureManager &TM, std::string adr, int nbrF, int size,bool,int timer);
@@ -64,6 +62,8 @@ private:
         std::map<std::string, _states_desc_t> _graph;
 
     };
+
+    _animation_graph _anim_graph;
 
 };
 }//age

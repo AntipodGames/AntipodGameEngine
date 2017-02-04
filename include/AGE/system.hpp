@@ -6,7 +6,6 @@
 #include <QTimer>
 #include <memory>
 #include <AGE/parameters.hpp>
-#include <AGE/controller.hpp>
 #include <AGE/displaymanager.h>
 #include <yaml-cpp/yaml.h>
 #include <AGE/engine.hpp>
@@ -139,7 +138,7 @@ protected:
         std::cout << "load " << file << std::endl;
         YAML::Node yaml_file = YAML::LoadFile(file);
 
-        for(int i = 0; i < yaml_file.size(); i++ ){
+        for(size_t i = 0; i < yaml_file.size(); i++ ){
             std::stringstream stream;
             stream << "sprite_" << i;
             YAML::Node spriteNode = yaml_file[stream.str()];
@@ -147,12 +146,11 @@ protected:
             _am.add(spriteNode["name"].as<std::string>(),
                     AnimatedSprite(_tm,
                     spriteNode["path"].as<std::string>(),
-                    spriteNode["frames_nbr"].as<int>(),
+                    spriteNode["animation_graph"].as<std::string>(),
                     spriteNode["width"].as<int>(),
                     spriteNode["height"].as<int>(),
                     spriteNode["center_pos"]["x"].as<int>(),
-                    spriteNode["center_pos"]["y"].as<int>(),
-                    0));
+                    spriteNode["center_pos"]["y"].as<int>()));
         }
     }
 
