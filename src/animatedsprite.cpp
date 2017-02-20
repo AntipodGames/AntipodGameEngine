@@ -7,125 +7,34 @@ using namespace age;
 AnimatedSprite::AnimatedSprite(TextureManager &TM, std::string sprite,
                                std::string anim_yml, int width, int height,
                                int centreX, int centreY){
-    image.setTexture(*(TM.GetTexture(sprite)));
-
+    _image.setTexture(*(TM.GetTexture(sprite)));
+    std::cout << anim_yml << std::endl;
     //TODO create animation graph
     YAML::Node yaml_file = YAML::LoadFile(anim_yml);
     YAML::Node anim_graph = yaml_file["animation_graph"];
     _anim_graph = _animation_graph(anim_graph);
+    for(const auto& node : _anim_graph._graph)
+        if(node.second.position == 0)
+            _current_state = node.first;
 
 
-    float scale1 = ((float)width*nbrFrame)/(float)image.getTexture()->getSize().x;
-    float scale2 = (float)height/(float)image.getTexture()->getSize().y;
+    float scale1 = ((float)width*get_current_state().nbr_frames)/
+            (float)_image.getTexture()->getSize().x;
+    float scale2 = (float)height/(float)_image.getTexture()->getSize().y;
 
-    image.setScale(scale1,scale2);
+    _image.setScale(scale1,scale2);
 
-    image.setOrigin(image.getTexture()->getSize().x/(centreX*nbrFrame),image.getTexture()->getSize().y/centreY);
-    image.setTextureRect(sf::IntRect(0,0,image.getTexture()->getSize().x/nbrFrame,image.getTexture()->getSize().y));
+    _image.setOrigin(_image.getTexture()->getSize().x/(centreX*get_current_state().nbr_frames),
+                    _image.getTexture()->getSize().y/(centreY*_anim_graph._graph.size()));
+    _image.setTextureRect(sf::IntRect(0,0,_image.getTexture()->getSize().x/get_current_state().nbr_frames,
+                                     _image.getTexture()->getSize().y/_anim_graph._graph.size()));
 }
 
-/**
- * Constructeur d'image animé
- * @brief AnimatedSprite::AnimatedSprite
- * @param IM
- * @param adr
- * @param nbrF
- * @param width
- * @param height
- * @param centreX
- * @param centreY
- */
-AnimatedSprite::AnimatedSprite(TextureManager & TM, std::string adr,int nbrF, int width, int height, int centreX, int centreY,int time)
-{
-    std::string imAdr(adr);
-//    imAdr.append(".png");
-//    std::string dataAdr(adr);
-//    dataAdr.append(".data");
-
-    image.setTexture(*(TM.GetTexture(imAdr)));
-
-    timer = time;
-    frame = 1;
-    cpt = 0;
-    nbrFrame = nbrF;
-    float scale1 = ((float)width*nbrFrame)/(float)image.getTexture()->getSize().x;
-    float scale2 = (float)height/(float)image.getTexture()->getSize().y;
-
-    image.setScale(scale1,scale2);
-
-    image.setOrigin(image.getTexture()->getSize().x/(centreX*nbrFrame),image.getTexture()->getSize().y/centreY);
-    image.setTextureRect(sf::IntRect(0,0,image.getTexture()->getSize().x/nbrFrame,image.getTexture()->getSize().y));
-   // dataAnalyser(width,dataAdr);
-
-}
-
-/**
- * @brief AnimatedSprite::AnimatedSprite
- * @param TM
- * @param adr
- * @param nbrF
- * @param size
- * @param centreX
- * @param centreY
- * @param time
- */
-AnimatedSprite::AnimatedSprite(TextureManager & TM, std::string adr,int nbrF,int size, int centreX, int centreY,int time)
-{
-    std::string imAdr(adr);
-//    imAdr.append(".png");
-//    std::string dataAdr(adr);
-//    dataAdr.append(".data");
-
-    image.setTexture(*(TM.GetTexture(imAdr)));
-
-    timer = time;
-    frame = 1;
-    cpt = 0;
-    nbrFrame = nbrF;
-    scale = size;
-
-    image.setScale(((float)size*nbrFrame)/((float)image.getTexture()->getSize().x),
-                   ((float)image.getTexture()->getSize().y)/((float)image.getTexture()->getSize().x)
-                   *((float)size*nbrFrame)/((float)image.getTexture()->getSize().y));
-
-    image.setOrigin(image.getTexture()->getSize().x/(centreX*nbrFrame),image.getTexture()->getSize().y/centreY);
-    image.setTextureRect(sf::IntRect(0,0,image.getTexture()->getSize().x/nbrFrame,image.getTexture()->getSize().y));
-   // dataAnalyser(width,dataAdr);
-
-}
-AnimatedSprite::AnimatedSprite(TextureManager & TM, std::string adr, int nbrF, int size, bool centrer, int time)
-{
-    std::string imAdr(adr);
-//    imAdr.append(".png");
-//    std::string dataAdr(adr);
-//    dataAdr.append(".data");
-
-    image.setTexture(*(TM.GetTexture(imAdr)));
-
-    timer = time;
-    frame = 1;
-    cpt = 0;
-    nbrFrame = nbrF;
-    scale = size;
-    image.setTextureRect(sf::IntRect(0,0,image.getTexture()->getSize().x/nbrFrame,image.getTexture()->getSize().y));
-
-    image.setScale(((float)size*nbrFrame)/((float)image.getTexture()->getSize().x),
-                   ((float)image.getTexture()->getSize().y)/((float)image.getTexture()->getSize().x)
-                   *((float)size*nbrFrame)/((float)image.getTexture()->getSize().y));
-    if(centrer){
-     //   if(nbrFrame == 1)
-       //     image.SetCenter(0,image.GetImage()->GetHeight()/2);
-       // else
-        image.setOrigin(image.getTexture()->getSize().x/(2*(nbrFrame)),image.getTexture()->getSize().y/2);
-    }
-   // dataAnalyser(width,dataAdr);
-
-}
 
 
 
 void AnimatedSprite::show(sf::RenderWindow &App){
-    App.draw(image);
+    App.draw(_image);
 }
 
 sf::Vector2f AnimatedSprite::TransformToLocal(const sf::Vector2f &Pt){
@@ -133,50 +42,63 @@ sf::Vector2f AnimatedSprite::TransformToLocal(const sf::Vector2f &Pt){
 }
 
 void AnimatedSprite::setFrame(int i){
-    frame = i%nbrFrame+1;
-    image.setTextureRect(sf::IntRect((image.getTexture()->getSize().x/nbrFrame)*(frame-1)
+
+    if(i%_anim_graph[_current_state].time_per_frame[_current_frame] == 0)
+        _current_frame = (_current_frame+1)%get_current_state().nbr_frames;
+
+    _image.setTextureRect(sf::IntRect((_image.getTexture()->getSize().x/get_current_state().nbr_frames)
+                                     *(_current_frame)
                                      ,0
-                                     ,(image.getTexture()->getSize().x/nbrFrame)
-                                     ,image.getTexture()->getSize().y));
+                                     ,(_image.getTexture()->getSize().x/get_current_state().nbr_frames)
+                                     ,_image.getTexture()->getSize().y/_anim_graph._graph.size()));
 
 }
 
 int AnimatedSprite::getFrame(){
-    return frame;
-}
-
-int AnimatedSprite::getNbrFrame(){
-    return nbrFrame;
+    return _current_frame;
 }
 
 void AnimatedSprite::Rotate(float angle){
-    image.rotate(angle/PI*180);
+    _image.rotate(angle/PI*180);
 
 }
 
 void AnimatedSprite::setAngle(float angle){
-    image.setRotation(angle/PI*180);
+    _image.setRotation(angle/PI*180);
 }
 
 float AnimatedSprite::getAngle(){
-    return image.getRotation()/180*PI;
+    return _image.getRotation()/180*PI;
 }
 
 void AnimatedSprite::setPosition(int x, int y){
-    image.setPosition(x,y);
+    _image.setPosition(x,y);
 }
 
-sf::Sprite &AnimatedSprite::getImage(){
-    return image;
+sf::Sprite &AnimatedSprite::get_image(){
+    return _image;
 }
 
 int AnimatedSprite::getScale(){
-    return scale;
+    return _scale;
 }
 
 void AnimatedSprite::resize(int x, int y){
-    image.setScale((float)(x*nbrFrame)/((float)image.getTexture()->getSize().x)
-                   ,((float)y)/((float)image.getTexture()->getSize().y));
+    _image.setScale((float)(x*get_current_state().nbr_frames)/((float)_image.getTexture()->getSize().x)
+                   ,((float)y*_anim_graph._graph.size())/((float)_image.getTexture()->getSize().y));
+}
+
+void AnimatedSprite::set_state(const std::string &state){
+    if(_anim_graph._graph.find(state) == _anim_graph._graph.end())
+        return;
+    _current_state = state;
+    _image.setTextureRect(sf::IntRect((_image.getTexture()->getSize().x/get_current_state().nbr_frames)
+                                     *(_current_frame-1)
+                                     ,(_image.getTexture()->getSize().y/_anim_graph._graph.size())
+                                     *(_anim_graph[state].position)
+                                     ,(_image.getTexture()->getSize().x/get_current_state().nbr_frames)
+                                     ,_image.getTexture()->getSize().y/_anim_graph._graph.size()));
+
 }
 
 AnimatedSprite::_animation_graph::_animation_graph(const YAML::Node &yaml_node){
@@ -188,7 +110,9 @@ AnimatedSprite::_animation_graph::_animation_graph(const YAML::Node &yaml_node){
         for(size_t i  = 0; i < it->second["neighbors"].size(); i++)
             description.neighbors[i] = it->second["neighbors"][i].as<std::string>();
         description.position = it->second["position"].as<int>();
-        description.time_per_frame = it->second["time_per_frame"].as<float>();
+        description.time_per_frame = std::vector<int>(it->second["time_per_frame"].size());
+        for(size_t i = 0; i < it->second["time_per_frame"].size(); i++)
+            description.time_per_frame[i] = it->second["time_per_frame"][i].as<float>();
         _graph.emplace(it->first.as<std::string>(),description);
     }
 }

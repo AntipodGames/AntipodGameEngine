@@ -21,10 +21,12 @@ void DisplayManager::display(sf::RenderWindow &window,AnimatedManager& am){
 
 void DisplayManager::_apply(AnimatedManager &am, Entity::_property_t prop){
     std::string name = TO_STRING(prop["name"])->value;
-    am.get(name).setFrame(TO_INTEGER(prop["frame"])->value);
+    am.get(name).setFrame(TO_INTEGER(prop["clock"])->value);
     am.get(name).setPosition(TO_INTEGER(prop["x"])->value,
                              TO_INTEGER(prop["y"])->value);
     am.get(name).setAngle(TO_DOUBLE(prop["angle"])->value);
     am.get(name).resize(TO_INTEGER(prop["width"])->value,
                         TO_INTEGER(prop["height"])->value);
+    am.get(name).set_state(TO_STRING(prop["state"])->value);
+
 }

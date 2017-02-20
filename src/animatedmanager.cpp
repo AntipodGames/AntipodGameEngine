@@ -31,7 +31,7 @@ void AnimatedManager::set(const std::string& label, const std::string& lbl){
 void AnimatedManager::changeFrame(const std::string& label, int n){
     std::vector<int> tmp(frameBDD[label]);
     AnimatedSprite tmpS(BDD[label]);
-    if(tmp[n] >= tmpS.getNbrFrame())
+    if(tmp[n] >= tmpS.get_current_state().nbr_frames)
         tmp[n] == 0;
 
     tmp[n]+=1;

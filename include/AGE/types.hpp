@@ -46,7 +46,14 @@ public:
     std::string value;
 };
 
+class Bool : public Types {
+public:
 
+    Bool(bool val) : value(val){}
+    Bool(const Bool& t) : value(t.value){}
+
+    bool value;
+};
 
 }
 
@@ -54,11 +61,13 @@ public:
 #define FLOAT_PTR(val) std::make_shared<age::Float>(age::Float(val))
 #define DOUBLE_PTR(val) std::make_shared<age::Double>(age::Double(val))
 #define STRING_PTR(val) std::make_shared<age::String>(age::String(val))
+#define BOOL_PTR(val) std::make_shared<age::Bool>(age::Bool(val))
 
 #define TO_INTEGER(ptr) std::static_pointer_cast<age::Integer>(ptr)
 #define TO_FLOAT(ptr) std::static_pointer_cast<age::Float>(ptr)
 #define TO_DOUBLE(ptr) std::static_pointer_cast<age::Double>(ptr)
 #define TO_STRING(ptr) std::static_pointer_cast<age::String>(ptr)
+#define TO_BOOL(ptr) std::static_pointer_cast<age::Bool>(ptr)
 
 #endif // TYPES_HPP
 

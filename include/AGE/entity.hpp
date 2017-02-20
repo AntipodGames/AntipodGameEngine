@@ -10,58 +10,9 @@
 
 namespace age {
 
-
-
-//class Property {
-//public:
-//    typedef std::shared_ptr<Property> Ptr;
-//    typedef const std::shared_ptr<Property> ConstPtr;
-//    Property(){}
-//    Property(std::string n, int x, int y, int w, int h) :
-//        _name(n), _x(x), _y(y), _width(w), _height(h){}
-
-//    Property(const Property& prop) :
-//        _name(prop._name), _x(prop._x), _y(prop._y), _width(prop._width), _height(prop._height){}
-
-//    virtual ~Property(){
-
-//    }
-////    virtual void set_frame(int i) = 0;
-
-//    std::string _name;
-//    int _x = 0;
-//    int _y = 0;
-//    int _width = 0;
-//    int _height = 0;
-//    int _frame = 0;
-//    int _angle = 0;
-//};
-
-
-//class Behavior {
-//public :
-
-//    typedef std::shared_ptr<Behavior> Ptr;
-//    typedef const std::shared_ptr<Behavior> ConstPtr;
-
-//    Behavior(){}
-//    Behavior(const Behavior& b){}
-
-//    virtual ~Behavior(){
-
-//        std::cout << "Destroy Behavior" << std::endl;
-//    }
-
-//    virtual void _run(Property* p) = 0;
-
-//};
-
-//using Entity = std::pair<Behavior*,Property*>;
-
-class Entity /*: public QObject*/
+class Entity
 {
 
-//    Q_OBJECT
 public:
 
     typedef std::shared_ptr<Entity> Ptr;
@@ -70,20 +21,48 @@ public:
     typedef std::unordered_map<std::string,Types::Ptr> _property_t;
 
     Entity(){
-        _behavior = [](_property_t){};
+        _behavior = [](_property_t&){};
+        _property.emplace("name",STRING_PTR(""));
+        _property.emplace("x",INTEGER_PTR(-1));
+        _property.emplace("y",INTEGER_PTR(-1));
+        _property.emplace("velocity",INTEGER_PTR(0));
+        _property.emplace("width",INTEGER_PTR(0));
+        _property.emplace("height",INTEGER_PTR(0));
+        _property.emplace("angle",DOUBLE_PTR(0));
+        _property.emplace("state",STRING_PTR("idle"));
+        _property.emplace("frame",INTEGER_PTR(0));
+        _property.emplace("clock",INTEGER_PTR(0));
     }
 
-    Entity(std::string n, int x, int y, int w, int h, int v){
-        _behavior = [](_property_t){};
+    Entity(const std::string& name){
+        _behavior = [](_property_t&){};
+
+        _property.emplace("name",STRING_PTR(name));
+        _property.emplace("x",INTEGER_PTR(-1));
+        _property.emplace("y",INTEGER_PTR(-1));
+        _property.emplace("velocity",INTEGER_PTR(0));
+        _property.emplace("width",INTEGER_PTR(0));
+        _property.emplace("height",INTEGER_PTR(0));
+        _property.emplace("angle",DOUBLE_PTR(0));
+        _property.emplace("state",STRING_PTR("idle"));
+        _property.emplace("frame",INTEGER_PTR(0));
+        _property.emplace("clock",INTEGER_PTR(0));
+
+    }
+
+    Entity(const std::string& n, int w, int h, int v){
+        _behavior = [](_property_t&){};
 
         _property.emplace("name",STRING_PTR(n));
-        _property.emplace("x",INTEGER_PTR(x));
-        _property.emplace("y",INTEGER_PTR(y));
+        _property.emplace("x",INTEGER_PTR(-1));
+        _property.emplace("y",INTEGER_PTR(-1));
         _property.emplace("velocity",INTEGER_PTR(v));
         _property.emplace("width",INTEGER_PTR(w));
         _property.emplace("height",INTEGER_PTR(h));
         _property.emplace("angle",DOUBLE_PTR(0));
+        _property.emplace("state",STRING_PTR("idle"));
         _property.emplace("frame",INTEGER_PTR(0));
+        _property.emplace("clock",INTEGER_PTR(0));
     }
 
 
@@ -99,34 +78,58 @@ public:
 
     }
 
-
-
-//signals:
-
-//public slots:
     void _run(){
-        _behavior(_property);
+       _behavior(_property);
+       TO_INTEGER(_property["clock"])->value=TO_INTEGER(_property["clock"])->value%120+1;
     }
 
 
     _property_t access_property(){return _property;}
 //    std::function<void(Property*)> access_behavior(){return _behavior;}
 
-    void set_behavior(std::function<void(_property_t)> beh){
+    void set_behavior(std::function<void(_property_t&)> beh){
         _behavior = beh;
     }
 
     const std::string & get_name(){return TO_STRING(_property["name"])->value;}
 
+    /**
+     * @brief add a new property if it does not exist,
+     * change the value of existing named property otherwise.
+     * @param name of the property
+     * @param value of the property
+     * @return true if a new property is added, false otherwise
+     */
+    bool add_property(const std::string& name,const Types::Ptr& value){
+        if(_property.find(name) == _property.end()){
+            _property.emplace(name,value);
+            return true;
+        }
+        _property[name] = value;
+        return false;
+    }
+
+    /**
+     * @brief set a property to a certain value.
+     * @param name of the property
+     * @param value of the property
+     * @return false if the property of name does not exist, true otherwise
+     */
+    bool set_property(const std::string& name, const Types::Ptr& value){
+        if(_property.find(name) == _property.end())
+            return false;
+
+        _property[name] = value;
+        return true;
+    }
 
 
 
 
 protected :
-    std::function<void(_property_t)> _behavior;
+    std::function<void(_property_t&)> _behavior;
     _property_t _property;
-//    behavior_t _behavior;
-//    property_t _property; //define is characteristics
+
 };
 }
 

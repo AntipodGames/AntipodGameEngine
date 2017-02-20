@@ -123,8 +123,8 @@ public:
     }
 
 protected:
-    virtual void _init(){}
-    virtual void _update(){}
+//    virtual void _init(){}
+//    virtual void _update(){}
     virtual void paintEvent(QPaintEvent*){
         _engine->_run(); //we update the engine : state of all entity and physical state of the environment
         _update(); //we update the graphic part

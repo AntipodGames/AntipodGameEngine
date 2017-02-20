@@ -7,61 +7,85 @@
 
 #define PI 3.14159265359
 
+//TODO CLEANING: REDUCE NUMBER OF FUNCTIONS
+
 namespace age{
 
 class AnimatedSprite
 {
-public:
-    AnimatedSprite(){}
-
-    AnimatedSprite(TextureManager &TM, std::string sprite, std::string anim_yml, int width, int height, int centreX, int centreY);
-    AnimatedSprite(TextureManager &TM, std::string adr, int nrbF,int width, int height, int centreX, int centreY,int timer);
-    AnimatedSprite(TextureManager &TM, std::string adr, int nrbF, int size, int centreX, int centreY,int timer);
-    AnimatedSprite(TextureManager &TM, std::string adr, int nbrF, int size,bool,int timer);
-    AnimatedSprite(const AnimatedSprite& as) :
-        image(as.image), timer(as.timer), nbrFrame(as.nbrFrame),
-        frame(as.frame), cpt(as.cpt), scale(as.scale){}
-
-    void show(sf::RenderWindow &);
-    void setFrame(int);
-    int getFrame();
-    void setPosition(int,int);
-    sf::Sprite &getImage();
-    void setAngle(float);
-    float getAngle();
-    void Rotate(float angle);
-    int getScale();
-    int getNbrFrame();
-    void resize(int x, int y);
-
-    static sf::Vector2f TransformToLocal(const sf::Vector2f &);
-
-
 private:
-    sf::Sprite image;
-
-    int timer;
-    int nbrFrame = 1;
-    int frame = 0;
-    int cpt;
-    int scale;
-
     class _animation_graph{
     public:
 
         _animation_graph(){}
         _animation_graph(const YAML::Node& yaml_node);
+        _animation_graph(const _animation_graph& ag) :
+            _graph(ag._graph){}
 
-        typedef struct{
+        typedef struct _states_desc_t{
+
+            _states_desc_t(){}
+            _states_desc_t(const _states_desc_t& sd) :
+                neighbors(sd.neighbors), nbr_frames(sd.nbr_frames),
+                time_per_frame(sd.time_per_frame), position(sd.position){}
+
             std::vector<std::string> neighbors;
             int nbr_frames;
-            float time_per_frame;
+            std::vector<int> time_per_frame;
             int position;
         } _states_desc_t;
 
         std::map<std::string, _states_desc_t> _graph;
 
+
+        _states_desc_t& operator[](std::string state){
+            return _graph[state];
+        }
+
     };
+
+public:
+    AnimatedSprite(){}
+
+    AnimatedSprite(TextureManager &TM,
+                   std::string sprite,
+                   std::string anim_yml,
+                   int width, int height,
+                   int centreX, int centreY);
+    AnimatedSprite(const AnimatedSprite& as) :
+        _image(as._image),
+        _current_frame(as._current_frame),
+        _current_state(as._current_state),
+        _cpt(as._cpt),
+        _scale(as._scale),
+        _anim_graph(as._anim_graph){}
+
+    void show(sf::RenderWindow &);
+    void setFrame(int);
+    int getFrame();
+    void setPosition(int,int);
+    sf::Sprite &get_image();
+    void setAngle(float);
+    float getAngle();
+    void Rotate(float angle);
+    int getScale();
+    void resize(int x, int y);
+
+    void set_state(const std::string &state);
+
+    static sf::Vector2f TransformToLocal(const sf::Vector2f &);
+
+    const _animation_graph::_states_desc_t& get_current_state(){
+        return _anim_graph[_current_state];
+    }
+
+private:
+    sf::Sprite _image;
+
+    int _current_frame = 0;
+    std::string _current_state;
+    int _cpt;
+    int _scale;
 
     _animation_graph _anim_graph;
 

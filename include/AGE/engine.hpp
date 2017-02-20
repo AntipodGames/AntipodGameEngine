@@ -26,6 +26,7 @@ public:
     }
 
     bool load_config_file(const std::string& configFile);
+    bool load_level(int i);
 
     virtual void _run();
     entites_map_t& get_entities(){return _entities_map;}
