@@ -1,0 +1,16 @@
+animation_graph:
+  red:
+    neighbors: ["blue"]
+    position: 0
+    nbr_frames: 8
+    time_per_frame: [15,15,15,15,15,15,15,15]
+  blue:
+    neighbors: ["yellow"]
+    position: 1
+    nbr_frames: 8
+    time_per_frame: [15,15,15,15,15,15,15,15]
+  yellow:
+    neighbors: ["red"]
+    position: 2
+    nbr_frames: 8
+    time_per_frame: [15,15,15,15,15,15,15,15]

@@ -1,0 +1,10 @@
+sprite_1:
+  name: "blurg"
+  path: "blurg.png"
+  animation_graph: "blurg.yml"
+  frames_nbr: 8
+  width: 75
+  height: 75
+  center_pos:
+   x: 2
+   y: 2

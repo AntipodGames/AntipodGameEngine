@@ -41,10 +41,17 @@ private:
         _states_desc_t& operator[](std::string state){
             return _graph[state];
         }
-
+        const _states_desc_t& operator[](std::string state) const {
+            return _graph.at(state);
+        }
     };
 
 public:
+
+    typedef std::shared_ptr<AnimatedSprite> Ptr;
+    typedef std::shared_ptr<const AnimatedSprite> ConstPtr;
+
+
     AnimatedSprite(){}
 
     AnimatedSprite(TextureManager &TM,
@@ -70,6 +77,7 @@ public:
     void Rotate(float angle);
     int getScale();
     void resize(int x, int y);
+    const _animation_graph& get_anim_graph(){return _anim_graph;}
 
     void set_state(const std::string &state);
 

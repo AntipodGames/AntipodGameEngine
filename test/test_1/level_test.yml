@@ -1,0 +1,25 @@
+scene:
+  layers: []
+  collision_maps: []
+npc:
+  blurg_1:
+    property:
+      name:
+        type: "string"
+        value: "blurg"
+      width:
+        type: "int"
+        value: 75
+      height: 
+        type: "int"
+        value: 75
+      velocity: 
+        type: "int" 
+        value: 3
+      life:
+        type: "double"
+        value: 10
+      state:
+        type: "string" 
+        value: "red"
+    graphic: "sprite_1"

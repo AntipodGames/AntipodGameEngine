@@ -6,9 +6,10 @@
 #include <QTimer>
 #include <memory>
 #include <AGE/parameters.hpp>
+#include <AGE/qsystem.hpp>
 #include <AGE/displaymanager.h>
-#include <yaml-cpp/yaml.h>
 #include <AGE/engine.hpp>
+#include <yaml-cpp/yaml.h>
 
 #ifdef Q_WS_X11
     #include <Qt/qx11info_x11.h>
@@ -18,95 +19,8 @@
 
 namespace age {
 
-class QSystem : public QWidget, public sf::RenderWindow
-{
-    Q_OBJECT
-public:
-    QSystem(QWidget *parent,const QPoint& Position, const QSize& Size) :
-        QWidget(parent), _is_init(false)
-    {
-        setAttribute(Qt::WA_PaintOnScreen);
-        setAttribute(Qt::WA_OpaquePaintEvent);
-        setAttribute(Qt::WA_NoSystemBackground);
 
-        setFocusPolicy(Qt::StrongFocus);
-
-        move(Position);
-        setMaximumSize(Size);
-        setMinimumSize(Size);
-
-        std::cout << parent->windowTitle().toStdString() << std::endl;
-        _timer.reset(new QTimer);
-        _timer->setInterval(parameters::frame_rate);
-
-        _dm.reset(new DisplayManager);
-
-
-    }
-
-    virtual ~QSystem(){
-        _dm.reset();
-        _engine.reset();
-    }
-
-//public slots:
-//    void paint(){
-//        repaint(_position.x(),_position.y(),_size.width(),_size.height());
-//    }
-
-
-
-protected:
-    virtual void _init() = 0;
-    virtual void _update() = 0;
-
-    void _init_view(int x, int y, int width, int height){
-        sf::Vector2f viewCenter(x,y);
-        sf::Vector2f viewSize(width,height);
-        _view = sf::View(viewCenter,viewSize);
-    }
-
-    QPaintEngine* paintEngine() const {return 0;}
-    virtual void showEvent(QShowEvent*){
-        if (!_is_init)
-        {
-            // Sous X11, il faut valider les commandes qui ont été envoyées au serveur
-            // afin de s'assurer que SFML aura une vision à jour de la fenêtre
-            #ifdef Q_WS_X11
-               XFlush(QX11Info::display());
-            #endif
-
-            // On crée la fenêtre SFML avec l'identificateur du widget
-            RenderWindow::create(winId());
-
-            // On laisse la classe dérivée s'initialiser si besoin
-            _init();
-
-            // On paramètre le timer de sorte qu'il génère un rafraîchissement à la fréquence souhaitée
-            connect(_timer.get(), SIGNAL(timeout()), this, SLOT(repaint()));
-            _timer->start();
-
-            connect(_engine.get(),SIGNAL(sendProperty(Entity::_property_t)),_dm.get(),SLOT(storeProp(Entity::_property_t)));
-
-
-            _is_init = true;
-        }
-    }
-
-
-    sf::View _view;
-    std::unique_ptr<QTimer> _timer;
-    bool _is_init;
-
-    Engine::Ptr _engine;
-    DisplayManager::Ptr _dm;
-    AnimatedManager _am;
-    TextureManager _tm;
-//    QPoint _position;
-//    QSize _size;
-};
-
-class System : public QSystem
+class System : public age::QSystem
 {
     Q_OBJECT
 public:
@@ -115,11 +29,36 @@ public:
     typedef std::shared_ptr<const System> ConstPtr;
 
 
-    System(QWidget *parent,const QPoint& Position, const QSize& Size)
+    System(QWidget *parent,const QPoint& Position, const QSize& Size,const std::string& graphics_file = "graphics/graphics.yml")
         : QSystem(parent,Position,Size){
+        _dm.reset(new DisplayManager);
+        _graphics = graphics_file;
+
+    }
+
+    System(QWidget *parent, const std::string& config_file) : QSystem(parent){
+        _dm.reset(new DisplayManager);
+        YAML::Node file = YAML::LoadFile(config_file);
+        if(file.IsNull()){
+            std::cerr << "Unable to open configuration file : " << config_file << std::endl;
+            return;
+        }
+
+        _work_dir = file["work_dir"].as<std::string>();
+
+        _size[0] = file["window"]["width"].as<int>();
+        _size[1] = file["window"]["height"].as<int>();
+
+        _position[0] = file["window"]["pos_x"].as<int>();
+        _position[1] = file["window"]["pos_y"].as<int>();
+
+        _graphics = file["graphics"].as<std::string>();
+        _initialize();
     }
 
     virtual ~System(){
+        _dm.reset();
+        _engine.reset();
     }
 
 protected:
@@ -130,30 +69,21 @@ protected:
         _update(); //we update the graphic part
         clear();
         setView(_view);
-        _dm->display(*this,_am);
+        _dm->display(*this,_am,_tm);
         display();
     }
 
-    void _load_graphics(std::string file){
-        std::cout << "load " << file << std::endl;
-        YAML::Node yaml_file = YAML::LoadFile(file);
+    void _load_graphics(const std::string& file, const std::string& name);
+    void _load_all_graphics(const std::string& file);
+    void _link_sprites_to_entities();
+    void _load_level(const std::string& file);
+    void _load_env_config(const std::string& file);
 
-        for(size_t i = 0; i < yaml_file.size(); i++ ){
-            std::stringstream stream;
-            stream << "sprite_" << i;
-            YAML::Node spriteNode = yaml_file[stream.str()];
-
-            _am.add(spriteNode["name"].as<std::string>(),
-                    AnimatedSprite(_tm,
-                    spriteNode["path"].as<std::string>(),
-                    spriteNode["animation_graph"].as<std::string>(),
-                    spriteNode["width"].as<int>(),
-                    spriteNode["height"].as<int>(),
-                    spriteNode["center_pos"]["x"].as<int>(),
-                    spriteNode["center_pos"]["y"].as<int>()));
-        }
-    }
-
+    DisplayManager::Ptr _dm;
+    Engine::Ptr _engine;
+    AnimatedManager _am;
+    TextureManager _tm;
+    Scene _scene;
 
 };
 

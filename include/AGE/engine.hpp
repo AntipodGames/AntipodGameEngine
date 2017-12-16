@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <memory>
 #include <AGE/entity.hpp>
+#include <AGE/displaymanager.h>
 
 namespace age {
 
@@ -19,14 +20,15 @@ public:
 
     typedef std::unordered_map<std::string, std::shared_ptr<Entity>> entites_map_t;
 
-    Engine(){}
-    Engine(const std::string& configFile);
+    Engine(const DisplayManager::Ptr& dm){
+        connect(this,SIGNAL(sendProperty(Entity::_property_t)),dm.get(),SLOT(storeProp(Entity::_property_t)));
+    }
+    Engine(const DisplayManager::Ptr& dm,const std::string& configFile);
 
     virtual ~Engine(){
     }
 
     bool load_config_file(const std::string& configFile);
-    bool load_level(int i);
 
     virtual void _run();
     entites_map_t& get_entities(){return _entities_map;}

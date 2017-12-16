@@ -4,7 +4,7 @@ using namespace age;
 
 
 void AnimatedManager::add(const std::string& label, AnimatedSprite image){
-    BDD.insert(std::make_pair(label,image));
+    BDD.insert(std::make_pair(label,std::make_shared<AnimatedSprite>(image)));
 
 
     if(frameBDD.find(label) != frameBDD.end()){
@@ -19,7 +19,7 @@ void AnimatedManager::add(const std::string& label, AnimatedSprite image){
     }
 }
 
-AnimatedSprite& AnimatedManager::get(const std::string& label){
+AnimatedSprite::Ptr AnimatedManager::get(const std::string& label){
    return BDD[label];
 
 }
@@ -28,16 +28,16 @@ void AnimatedManager::set(const std::string& label, const std::string& lbl){
     BDD[label] = BDD[lbl];
 }
 
-void AnimatedManager::changeFrame(const std::string& label, int n){
-    std::vector<int> tmp(frameBDD[label]);
-    AnimatedSprite tmpS(BDD[label]);
-    if(tmp[n] >= tmpS.get_current_state().nbr_frames)
-        tmp[n] == 0;
+//void AnimatedManager::changeFrame(const std::string& label, int n){
+//    std::vector<int> tmp(frameBDD[label]);
+//    AnimatedSprite tmpS(BDD[label]);
+//    if(tmp[n] >= tmpS.get_current_state().nbr_frames)
+//        tmp[n] == 0;
 
-    tmp[n]+=1;
+//    tmp[n]+=1;
 
-    frameBDD.emplace(label,tmp);
-}
+//    frameBDD.emplace(label,tmp);
+//}
 
 void AnimatedManager::deleteFrame(const std::string& label, int n){
     std::vector<int> tmp(frameBDD[label]);
