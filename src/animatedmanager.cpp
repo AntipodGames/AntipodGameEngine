@@ -1,4 +1,4 @@
-#include "AGE/animatedmanager.h"
+#include "../include/AGE/animatedmanager.h"
 
 using namespace age;
 

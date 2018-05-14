@@ -1,0 +1,7 @@
+work_dir: "/home/leni/git/AGE/test/test_control/"
+window :
+  width : 800
+  height : 600
+  pos_x : 0
+  pos_y : 0
+graphics: "graphics.yml"

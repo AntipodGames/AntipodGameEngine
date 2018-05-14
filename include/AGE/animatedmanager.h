@@ -1,6 +1,6 @@
 #ifndef ANIMATEDMANAGER_H
 #define ANIMATEDMANAGER_H
-#include "AGE/animatedsprite.h"
+#include "animatedsprite.h"
 #include <stdexcept>
 #include <iostream>
 #include <QMap>

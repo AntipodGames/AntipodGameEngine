@@ -10,8 +10,15 @@ template <class element>
 class QuadTree
 {
 public:
-    static const int max_nbr_elt;
-    static const int max_depth;
+    int max_nbr_elt = 5;
+    int max_depth = 0;
+
+    typedef enum branch_t {
+        UPLEFT = 0,
+        UPRIGHT = 1,
+        DOWNLEFT = 2,
+        DOWNRIGHT = 3
+    }branch_t;
 
     /**
      * @brief area_t
@@ -24,31 +31,36 @@ public:
 
     QuadTree(){}
     QuadTree(int lvl, const area_t& a) :
-        _area(a), _level(lvl){}
+        _level(lvl), _area(a){}
     QuadTree(const QuadTree& qt):
         _level(qt._level), _area(qt._area), _elts(qt._elts),
-        _upleft(qt._upleft), _upright(qt._upright),
-        _downleft(qt._downleft), _downright(qt._downright){}
+        _branch(qt._branch)
+    {}
 
     /**
      * @brief insert one element
      * @param _elt
      */
-    void insert(element elt){
+    bool insert(std::shared_ptr<element> elt){
+
+        if(!_is_in_area(elt->get_center()[0],elt->get_center()[1]))
+                return false;
 
         if((_is_leaf && _elts.size() < max_nbr_elt) || _level >= max_depth){
+//            if(!exist(elt))
             _elts.push_back(elt);
-            return;
+            return true;
         }
 
         if(_is_leaf){
             _split();
-            for(const element& e: _elts)
-                _add(e);
+            for(const std::shared_ptr<element>& e: _elts)
+                _branch[_in_which_branch(e->get_center()[0],e->get_center()[1])]->insert(e);
             _elts.clear();
         }
 
-        _add(elt);
+        _branch[_in_which_branch(elt->get_center()[0],elt->get_center()[1])]->insert(elt);
+        return true;
     }
 
     /**
@@ -61,10 +73,8 @@ public:
         }
 
         if(!_is_leaf){
-            _upleft->clear();
-            _upright->clear();
-            _downleft->clear();
-            _downright->clear();
+            for(auto& branch : _branch)
+                branch->clear();
         }
     }
 
@@ -81,10 +91,8 @@ public:
             return node_size();
 
         int s = 0;
-        s += _upleft->size();
-        s += _upright->size();
-        s += _downright->size();
-        s += _downleft->size();
+        for(auto& branch : _branch)
+            s += branch->size();
         return s;
     }
 
@@ -96,10 +104,9 @@ public:
             return _level;
 
         int l[4];
-        l[0] = _upleft->depth();
-        l[1] = _upright->depth();
-        l[2] = _downright->depth();
-        l[3] = _downleft->depth();
+        for(int i = 0; i < 4; i++){
+            l[i] = _branch[i]->depth();
+        }
         int max_l = l[0];
         for(int i = 1; i < 4 ; i++)
             if(l[i] > max_l)
@@ -111,89 +118,130 @@ public:
 
     bool is_leaf() const {return _is_leaf;}
 
-    const QuadTree::ConstPtr get_upleft() const {return _upleft;}
-    const QuadTree::ConstPtr get_upright() const {return _upright;}
-    const QuadTree::ConstPtr get_downleft() const {return _downleft;}
-    const QuadTree::ConstPtr get_downright() const {return _downright;}
+    const QuadTree::ConstPtr get_upleft() const {return _branch[UPLEFT];}
+    const QuadTree::ConstPtr get_upright() const {return _branch[UPRIGHT];}
+    const QuadTree::ConstPtr get_downleft() const {return _branch[DOWNLEFT];}
+    const QuadTree::ConstPtr get_downright() const {return _branch[DOWNRIGHT];}
 
-    const std::vector<element>& get_elts() const {return _elts;}
+    const std::vector<std::shared_ptr<element>>& get_elts() const {return _elts;}
+
+    int get_level() const {return _level;}
+    area_t get_area() const {return _area;}
 
     /**
-     * @brief get an element from its graphical position
-     * @param x
-     * @param y
-     * @return
+     * @brief move an element in this from previous location (x,y) to is new location element->get_center
+     * @param element
+     * @param previous location x
+     * @param previous location y
      */
-    const element& get(float x, float y){
-        // TO DO
+    bool move(const std::shared_ptr<element>& elt,float x, float y){
+        if(_is_leaf){
+            if(!_is_in_area(elt->get_center()[0],elt->get_center()[1]) && _level != 0){
+                remove(elt);
+                return true;
+            }
+            else return false;
+        }
+
+        bool moved = false;
+
+        moved = _branch[_in_which_branch(x,y)]->move(elt,x,y);
+
+        if(moved && !insert(elt)){
+            _prune();
+            return true;
+        }
+        return false;
     }
 
     /**
-     * @brief move an element in this from (start_x,start_y) to (goal_x,goal_y)
-     * @param start_x
-     * @param start_y
-     * @param goal_x
-     * @param goal_y
+     * @brief remove an element
+     * @param elt
      */
-    void move(float start_x, float start_y, float goal_x, float goal_y){
-        // TO DO
+    bool remove(const std::shared_ptr<element>& elt){
+        if(_is_leaf){
+            for(auto it = _elts.begin(); it != _elts.end(); it++){
+                if(*it == elt){
+                    _elts.erase(it);
+                    return true;
+                }
+            }
+            return false;
+        }
+        _branch[_in_which_branch(elt->get_center()[0],elt->get_center()[1])]->remove(elt);
+
+        _prune();
     }
 
-    /**
-     * @brief remove an element from its graphical location
-     * @param x
-     * @param y
-     */
-    void remove(float x, float y){
-        // TO DO
+
+    bool exist(const std::shared_ptr<element>& elt){
+        for(const std::shared_ptr<element>& e : _elts){
+            if(e == elt)
+                return true;
+        }
+        return false;
     }
 
 private:
     void _split(){
         _is_leaf = false;
-        _upleft.reset(new QuadTree(_level+1,
-                                   std::make_tuple(
-                                    _area[0],_area[1],
-                                    _area[2]/2,_area[3]/2)));
-        _upright.reset(new QuadTree(_level+1,
-                                    std::make_tuple(
-                                    _area[0] + _area[2]/2,
+        _branch[UPLEFT].reset(new QuadTree(_level+1,
+                                   {_area[0],_area[1],
+                                    _area[2]/2,_area[3]/2}));
+        _branch[UPRIGHT].reset(new QuadTree(_level+1,
+                                   {_area[0] + _area[2]/2,
                                     _area[1],
-                                    _area[2]/2,_area[3]/2)));
-        _downleft.reset(new QuadTree(_level+1,
-                                     std::make_tuple(
-                                     _area[0],
+                                    _area[2]/2,_area[3]/2}));
+        _branch[DOWNLEFT].reset(new QuadTree(_level+1,
+                                    {_area[0],
                                      _area[1] + _area[3]/2,
-                                     _area[2],_area[3]/2)));
-        _downright.reset(new QuadTree(_level+1,
-                                      std::make_tuple(
-                                      _area[0] + _area[2]/2,
+                                     _area[2]/2,_area[3]/2}));
+        _branch[DOWNRIGHT].reset(new QuadTree(_level+1,
+                                     {_area[0] + _area[2]/2,
                                       _area[1] + _area[3]/2,
-                                      _area[2]/2,_area[3]/2)));
+                                      _area[2]/2,_area[3]/2}));
     }
 
-    void _add(element elt){
+
+
+    bool _prune(){
+        bool to_prune = true;
+        for(auto& branch: _branch)
+            to_prune = to_prune && branch->is_leaf() && branch->get_elts().empty();
+        if(to_prune){
+            for(auto& branch: _branch)
+                branch.reset();
+            _is_leaf = true;
+            return true;
+        }
+        return false;
+    }
+
+    bool _is_in_area(float x, float y){
+        return x >= _area[0] && x < _area[0] + _area[2]
+                && y >= _area[1] && y < _area[1] + _area[3];
+    }
+
+    branch_t _in_which_branch(float x, float y){
         float mid_pt_x = _area[0] + _area[2]/2;
         float mid_pt_y = _area[1] + _area[3]/2;
 
-        if(elt.get_center()[0] <= mid_pt_x && elt.get_center()[1] <= mid_pt_y)
-            _upleft->insert(elt);
-        else if(elt.get_center()[0] > mid_pt_x && elt.get_center()[1] <= mid_pt_y)
-            _upright->insert(elt);
-        else if(elt.get_center()[0] <= mid_pt_x && elt.get_center()[1] > mid_pt_y)
-            _downleft->insert(elt);
-        else if(elt.get_center()[0] > mid_pt_x && elt.get_center()[1] > mid_pt_y)
-            _downright->insert(elt);
+
+        if(x < mid_pt_x && y < mid_pt_y)
+            return UPLEFT;
+        else if(x >= mid_pt_x && y < mid_pt_y)
+            return UPRIGHT;
+        else if(x < mid_pt_x && y >= mid_pt_y)
+            return DOWNLEFT;
+        else if(x >= mid_pt_x && y >= mid_pt_y)
+            return DOWNRIGHT;
     }
 
     bool _is_leaf = true;
-    int _level;
+    int _level = 0;
     area_t _area;
-    std::vector<element> _elts;
-    QuadTree::Ptr _upleft;
-    QuadTree::Ptr _upright;
-    QuadTree::Ptr _downleft;
-    QuadTree::Ptr _downright;
+    std::vector<std::shared_ptr<element>> _elts;
+    std::array<QuadTree::Ptr,4> _branch;
 };
 
 

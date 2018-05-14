@@ -2,11 +2,14 @@
 #define DISPLAYMANAGER_H
 
 #include <QObject>
-#include <AGE/entity.hpp>
-#include <AGE/animatedmanager.h>
-#include <AGE/qsystem.hpp>
+#include "entity.hpp"
+#include "animatedmanager.h"
+#include "qsystem.hpp"
 #include <SFML/Graphics.hpp>
+#include <vector>
 #include <queue>
+
+#include "collider.hpp"
 
 namespace age{
 
@@ -36,9 +39,11 @@ public:
 
 public slots:
     void storeProp(Entity::_property_t prop);
+    void displayColliderOverlay(const QuadTree<EmptyCollider>::ConstPtr qt);
 
 private:
     std::queue<Entity::_property_t> _prop_list;
+    std::vector<std::shared_ptr<sf::Drawable>> _overlay_list;
 
     void _apply(AnimatedManager& am, Entity::_property_t prop);
 

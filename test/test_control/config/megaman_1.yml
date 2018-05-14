@@ -1,0 +1,20 @@
+animation_graph:
+  red:
+    neighbors: ["steady"]
+    position: 0
+    width: 45
+    height: 54
+    nbr_frames: 3
+    time_per_frame: [15,15,15]
+  blue:
+    neighbors: ["running"]
+    position: 1
+    width: 45
+    height: 54
+    nbr_frames: 16
+    time_per_frame: [15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]
+  yellow:
+    neighbors: ["jumping"]
+    position: 2
+    nbr_frames: 9
+    time_per_frame: [15,15,15,15,15,15,15,15,15]

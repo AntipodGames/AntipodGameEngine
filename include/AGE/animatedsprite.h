@@ -1,7 +1,7 @@
 #ifndef ANIMATEDSPRITE_H
 #define ANIMATEDSPRITE_H
 #include <SFML/Graphics.hpp>
-#include <AGE/texturemanager.h>
+#include "texturemanager.h"
 #include <stack>
 #include <yaml-cpp/yaml.h>
 
@@ -33,10 +33,12 @@ private:
             int nbr_frames;
             std::vector<int> time_per_frame;
             int position;
+            std::map<int,std::vector<std::array<int,2>>> frames_positions;
         } _states_desc_t;
 
         std::map<std::string, _states_desc_t> _graph;
 
+//        void generate_frame_positions(const sf::Image* image);
 
         _states_desc_t& operator[](std::string state){
             return _graph[state];
@@ -44,6 +46,9 @@ private:
         const _states_desc_t& operator[](std::string state) const {
             return _graph.at(state);
         }
+
+        std::string to_string() const;
+
     };
 
 public:

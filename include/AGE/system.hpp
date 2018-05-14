@@ -5,10 +5,11 @@
 #include <QWidget>
 #include <QTimer>
 #include <memory>
-#include <AGE/parameters.hpp>
-#include <AGE/qsystem.hpp>
-#include <AGE/displaymanager.h>
-#include <AGE/engine.hpp>
+#include "parameters.hpp"
+#include "qsystem.hpp"
+#include "displaymanager.h"
+#include "engine.hpp"
+#include "collider.hpp"
 #include <yaml-cpp/yaml.h>
 
 #ifdef Q_WS_X11
@@ -61,12 +62,19 @@ public:
         _engine.reset();
     }
 
+
+
+
 protected:
 //    virtual void _init(){}
 //    virtual void _update(){}
+
+
+
     virtual void paintEvent(QPaintEvent*){
         _engine->_run(); //we update the engine : state of all entity and physical state of the environment
         _update(); //we update the graphic part
+        _update_controller();
         clear();
         setView(_view);
         _dm->display(*this,_am,_tm);
@@ -79,13 +87,15 @@ protected:
     void _load_level(const std::string& file);
     void _load_env_config(const std::string& file);
 
+
     DisplayManager::Ptr _dm;
     Engine::Ptr _engine;
     AnimatedManager _am;
     TextureManager _tm;
     Scene _scene;
 
+
 };
 
-}
+}//age
 #endif // SYSTEM_HPP

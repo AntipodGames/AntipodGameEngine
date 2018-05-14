@@ -15,7 +15,7 @@ void Core::_init(){
 
 //    _load_level("level_test.yml");
 
-    scripts::init_test(_engine->get_entities(),_am);
+    scripts::init_test(_engine,_am);
 
     std::cout<< "init !!!" << std::endl;
 }
@@ -36,7 +36,4 @@ int main(int argc, char** argv){
     core->show();
 
     return App->exec();
-
-
-    return 0;
 }

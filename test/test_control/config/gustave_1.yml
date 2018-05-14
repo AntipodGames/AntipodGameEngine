@@ -1,0 +1,6 @@
+animation_graph:
+  idle:
+    neighbors: []
+    position: 0
+    nbr_frames: 8
+    time_per_frame: [10,10,10,10,10,10,10,10]

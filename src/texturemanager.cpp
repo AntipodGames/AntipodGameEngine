@@ -1,4 +1,4 @@
-#include "AGE/texturemanager.h"
+#include "../include/AGE/texturemanager.h"
 #include <stdlib.h>
 #include <dirent.h>
 

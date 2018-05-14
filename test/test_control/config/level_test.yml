@@ -1,12 +1,12 @@
 scene:
-  layers: []
+  layers: ["sprites/background.png"]
   collision_maps: []
-npc:
-  blurg_1:
+controller:
+  gustave_1:
     property:
       name:
         type: "string"
-        value: "blurg"
+        value: "gustave_1"
       width:
         type: "int"
         value: 100
@@ -21,6 +21,6 @@ npc:
         value: 10
       state:
         type: "string" 
-        value: "red"
+        value: "idle"
     graphic: "sprite_1"
     collider: "circle"

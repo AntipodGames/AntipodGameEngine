@@ -3,10 +3,13 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include <QEvent>
+#include <QMouseEvent>
+#include <QKeyEvent>
 #include <QWidget>
 #include <QTimer>
 #include <memory>
-#include <AGE/parameters.hpp>
+#include "parameters.hpp"
 #include <yaml-cpp/yaml.h>
 
 #ifdef Q_WS_X11
@@ -64,6 +67,19 @@ public:
 
     std::array<float,2> get_size(){return _size;}
     std::array<float,2> get_position(){return _position;}
+
+signals:
+    void sig_left();
+    void sig_right();
+    void sig_up();
+    void sig_down();
+    void send_mouse_pos(float,float);
+    void sig_mouse_left();
+    void sig_mouse_right();
+    void sig_mouse_middle();
+    void sig_mouse_double_left();
+    void sig_mouse_double_right();
+
 protected:
     virtual void _init() = 0;
     virtual void _update() = 0;
@@ -75,6 +91,7 @@ protected:
     }
 
     void _initialize(){
+        setMouseTracking(true);
 
         move(QPoint(_position[0],_position[1]));
         setMaximumSize(QSize(_size[0],_size[1]));
@@ -109,10 +126,29 @@ protected:
         }
     }
 
+    //Control Event Handler
+    void keyPressEvent(QKeyEvent*);
+    void keyReleaseEvent(QKeyEvent*);
+    void mouseMoveEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent*);
+    void mouseReleaseEvent(QMouseEvent*);
+
+//    void mouseDoubleClickEvent(QMouseEvent*);
+
+    void _update_controller();
 
     sf::View _view;
     std::unique_ptr<QTimer> _timer;
     bool _is_init;
+
+    bool _left_pressed = false;
+    bool _right_pressed = false;
+    bool _up_pressed = false;
+    bool _down_pressed = false;
+    bool _mouse_right_pressed = false;
+    bool _mouse_left_pressed = false;
+    bool _mouse_middle_pressed = false;
+
 
     std::array<float,2> _position;
     std::array<float,2> _size;

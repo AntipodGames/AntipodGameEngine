@@ -1,4 +1,4 @@
-#include "AGE/animatedsprite.h"
+#include "../include/AGE/animatedsprite.h"
 
 using namespace age;
 
@@ -13,6 +13,11 @@ AnimatedSprite::AnimatedSprite(TextureManager &TM, std::string sprite,
     YAML::Node yaml_file = YAML::LoadFile(anim_yml);
     YAML::Node anim_graph = yaml_file["animation_graph"];
     _anim_graph = _animation_graph(anim_graph);
+    if(_anim_graph._graph.empty())
+        std::cerr << "Animation graph of " << sprite << " is not loaded !" << std::endl;
+    else
+        std::cerr << "Animation graph is loaded" << std::endl;
+
     for(const auto& node : _anim_graph._graph)
         if(node.second.position == 0)
             _current_state = node.first;
@@ -58,12 +63,12 @@ int AnimatedSprite::getFrame(){
 }
 
 void AnimatedSprite::Rotate(float angle){
-    _image.rotate(angle/PI*180);
+    _image.rotate((angle+PI/2.)/PI*180);
 
 }
 
 void AnimatedSprite::setAngle(float angle){
-    _image.setRotation(angle/PI*180);
+    _image.setRotation((angle+PI/2.)/PI*180);
 }
 
 float AnimatedSprite::getAngle(){
@@ -104,6 +109,7 @@ AnimatedSprite::_animation_graph::_animation_graph(const YAML::Node &yaml_node){
 
     for(auto it = yaml_node.begin(); it != yaml_node.end(); ++it){
         _states_desc_t description;
+        std::cout << it->first.as<std::string>() << std::endl;
         description.nbr_frames = it->second["nbr_frames"].as<int>();
         description.neighbors = std::vector<std::string>(it->second["neighbors"].size());
         for(size_t i  = 0; i < it->second["neighbors"].size(); i++)
@@ -115,3 +121,18 @@ AnimatedSprite::_animation_graph::_animation_graph(const YAML::Node &yaml_node){
         _graph.emplace(it->first.as<std::string>(),description);
     }
 }
+
+std::string AnimatedSprite::_animation_graph::to_string() const{
+    std::stringstream stream;
+    for(const auto& node : _graph){
+        stream << node.first << " : ";
+        for(const auto& neigh : node.second.neighbors)
+            stream << neigh << ", ";
+    }
+    stream << std::endl;
+    return stream.str();
+}
+
+//void AnimatedSprite::_animation_graph::generate_frames_positions(const sf::Image* image){
+
+//}

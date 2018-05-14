@@ -1,0 +1,9 @@
+sprite_1:
+  name: "gustave_1"
+  path: "sprites/gustave.png"
+  animation_graph: "config/gustave_1.yml"
+  width: 75
+  height: 75
+  center_pos:
+   x: 2
+   y: 2
