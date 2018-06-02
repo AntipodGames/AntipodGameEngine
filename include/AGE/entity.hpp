@@ -9,6 +9,7 @@
 #include "animatedsprite.h"
 #include <map>
 #include "collider.hpp"
+#include "vector_field.hpp"
 
 namespace age {
 
@@ -22,11 +23,11 @@ public:
     typedef std::shared_ptr<Entity> Ptr;
     typedef std::shared_ptr<const Entity> ConstPtr;
 
-    typedef std::map<std::string,Types::Ptr> _property_t;
 
     Entity(): QObject(){
         _collider.reset(new EmptyCollider);
         _behavior = [](_property_t&){};
+        _custom_run = [](Entity*){};
         _on_collision_behav = [](const _property_t&,_property_t&){};
         _in_collision_behav = [](const _property_t&,_property_t&){};
 
@@ -48,7 +49,7 @@ public:
         _behavior = [](_property_t&){};
         _on_collision_behav = [](const _property_t&,_property_t&){};
         _in_collision_behav = [](const _property_t&,_property_t&){};
-
+        _custom_run = [](Entity*){};
         _collider.reset(new EmptyCollider);
 
         _property.emplace("name",STRING_PTR(name));
@@ -69,6 +70,7 @@ public:
         _behavior = [](_property_t&){};
         _on_collision_behav = [](const _property_t&,_property_t&){};
         _in_collision_behav = [](const _property_t&,_property_t&){};
+        _custom_run = [](Entity*){};
 
         _collider.reset(new EmptyCollider);
         _property.emplace("name",STRING_PTR(n));
@@ -94,6 +96,7 @@ public:
         _collider = e._collider;
         _on_collision_behav = e._on_collision_behav;
         _in_collision_behav = e._in_collision_behav;
+        _custom_run = e._custom_run;
     }
 
 
@@ -103,8 +106,9 @@ public:
     }
 
     void _run(){
-        if(!_in_collision && _in_collision_setted)
+        if(!_in_collision || !_no_behavior_in_col)
             _behavior(_property);
+        _custom_run(this);
        TO_INTEGER(_property["clock"])->value=(TO_INTEGER(_property["clock"])->value+1)%60; //rethink this
        if(TO_INTEGER(_property["clock"])->value%
                (_sprite_link->get_anim_graph()[TO_STRING(_property["state"])->value]
@@ -113,18 +117,22 @@ public:
                    _sprite_link->get_anim_graph()[TO_STRING(_property["state"])->value].nbr_frames;
        float x = _collider->get_center()[0];
        float y = _collider->get_center()[1];
-       _collider->move(TO_DOUBLE(_property["x"])->value - TO_INTEGER(_property["width"])->value,TO_DOUBLE(_property["y"])->value - TO_INTEGER(_property["height"])->value);
+       _collider->move(TO_DOUBLE(_property["x"])->value,TO_DOUBLE(_property["y"])->value);
        _collider->set_prop(_property);
        emit update_qt(_collider,x,y);
        _in_collision = false;
     }
 
 
+
     _property_t& access_property(){return _property;}
-//    std::function<void(Property*)> access_behavior(){return _behavior;}
 
     void set_behavior(std::function<void(_property_t&)> beh){
         _behavior = beh;
+    }
+
+    void set_custom_run(std::function<void(Entity*)> cr){
+        _custom_run = cr;
     }
 
     const std::string & get_name(){return TO_STRING(_property["name"])->value;}
@@ -163,8 +171,11 @@ public:
         _on_collision_behav = cb;
     }
     void set_in_collision(std::function<void(const _property_t&,_property_t&)> cb){
-        _in_collision_setted = true;
         _in_collision_behav = cb;
+    }
+
+    void set_no_behavior_in_collision(bool b){
+        _no_behavior_in_col = b;
     }
 
     void link_to_sprite(const AnimatedSprite::Ptr& as){
@@ -183,6 +194,8 @@ public:
 
 signals:
     void update_qt(EmptyCollider::Ptr clld, float x, float y);
+    void send_vector_field(const std::string& name,const vector_field& vf);
+    void send_entity(const Entity& e);
 
 protected slots:
     void collision_free(){
@@ -198,6 +211,7 @@ protected slots:
     }
 
 protected :
+    std::function<void(Entity*)> _custom_run;
     std::function<void(_property_t&)> _behavior;
     std::function<void(const _property_t&,_property_t&)> _in_collision_behav;
     std::function<void(const _property_t&,_property_t&)> _on_collision_behav;
@@ -206,7 +220,7 @@ protected :
     EmptyCollider::Ptr _collider;
     bool _in_collision = false;
     bool _collision_free = true;
-    bool _in_collision_setted = false;
+    bool _no_behavior_in_col = false;
 
 };
 }

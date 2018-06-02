@@ -5,7 +5,9 @@ SOURCES += \
     src/texturemanager.cpp \
     src/displaymanager.cpp \
     src/system.cpp \
-    src/collider.cpp
+    src/collider.cpp \
+    src/vector_field.cpp \
+    src/types.cpp
 
 HEADERS += \
     include/AGE/parameters.hpp \
@@ -20,7 +22,8 @@ HEADERS += \
     include/AGE/qsystem.hpp \
     include/AGE/collider.hpp \
     include/AGE/quadtree.hpp \
-    include/AGE/controller.hpp
+    include/AGE/controller.hpp \
+    include/AGE/vector_field.hpp
 
 lib_mode {
 TEMPLATE = lib
@@ -62,5 +65,8 @@ test_control.target = test_control
 
 SUBDIRS = test_1 test_control
 
-}
 
+
+SUBDIRS += \
+    test_vector_field
+}

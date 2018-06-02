@@ -73,6 +73,8 @@ signals:
     void sig_right();
     void sig_up();
     void sig_down();
+    void sig_key_pressed(int);
+    void sig_key_released(int);
     void send_mouse_pos(float,float);
     void sig_mouse_left();
     void sig_mouse_right();

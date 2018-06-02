@@ -1,3 +1,6 @@
+#ifndef SCRIPTS_HPP
+#define SCRIPTS_HPP
+
 #include <AGE/engine.hpp>
 #include <sstream>
 
@@ -14,8 +17,8 @@ namespace scripts {
 //    TO_INTEGER(p["y"])->value+= y;
 //};
 
-static std::function<void(age::Entity::_property_t&)> mob1 =
-        [](age::Entity::_property_t& p)
+static std::function<void(age::_property_t&)> mob1 =
+        [](age::_property_t& p)
 {
 
     TO_STRING(p["state"])->value = "red";
@@ -45,8 +48,8 @@ static std::function<void(age::Entity::_property_t&)> mob1 =
 
 };
 
-static std::function<void(age::Entity::_property_t&)> mob2 =
-        [](age::Entity::_property_t& p)
+static std::function<void(age::_property_t&)> mob2 =
+        [](age::_property_t& p)
 {
     TO_STRING(p["state"])->value = "red";
 
@@ -75,8 +78,8 @@ static std::function<void(age::Entity::_property_t&)> mob2 =
     }
 };
 
-static std::function<void(age::Entity::_property_t&)> follow_line =
-        [](age::Entity::_property_t& p)
+static std::function<void(age::_property_t&)> follow_line =
+        [](age::_property_t& p)
 {
     TO_STRING(p["state"])->value = "red";
 
@@ -93,8 +96,8 @@ static std::function<void(age::Entity::_property_t&)> follow_line =
     }
 };
 
-static std::function<void(const age::Entity::_property_t&, age::Entity::_property_t&)> avoid =
-        [](const age::Entity::_property_t& cp, age::Entity::_property_t& p)
+static std::function<void(const age::_property_t&, age::_property_t&)> avoid =
+        [](const age::_property_t& cp, age::_property_t& p)
 {
 //    TO_STRING(p["state"])->value = "blue";
     float x_dir = TO_DOUBLE(p["x"])->value - TO_DOUBLE(cp.at("x"))->value;
@@ -109,8 +112,8 @@ static std::function<void(const age::Entity::_property_t&, age::Entity::_propert
 };
 
 
-static std::function<void(const age::Entity::_property_t&, age::Entity::_property_t&)> avoid2 =
-        [](const age::Entity::_property_t& cp, age::Entity::_property_t& p){
+static std::function<void(const age::_property_t&, age::_property_t&)> avoid2 =
+        [](const age::_property_t& cp, age::_property_t& p){
 //    float x_dir = TO_INTEGER(p["x"])->value - TO_INTEGER(cp.at("x"))->value;
 //    float y_dir = TO_INTEGER(p["y"])->value - TO_INTEGER(cp.at("y"))->value;
 
@@ -146,7 +149,7 @@ inline void init_test(age::Engine::Ptr engine,age::AnimatedManager am){
         key_name << "blurg_" << i;
         create_blurg(key_name.str(),engine);
 //        if(i%2)
-            engine->get_entities()[key_name.str()]->set_behavior(follow_line);
+        engine->get_entities()[key_name.str()]->set_behavior(follow_line);
 //        else engine->get_entities()[key_name.str()]->set_behavior(mob2);
         engine->get_entities()[key_name.str()]->link_to_sprite(am.get("sprite_1"));
 
@@ -159,3 +162,4 @@ inline void init_test(age::Engine::Ptr engine,age::AnimatedManager am){
 
 
 }
+#endif //SCRIPTS_HPP

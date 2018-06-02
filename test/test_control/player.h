@@ -15,12 +15,16 @@ public:
 
     Player(age::System* sys) : age::ControllerEntity(sys){}
 
+    double calc_angle(double,double,double,double);
+
 public slots:
     void left();
     void right();
     void down();
     void up();
     void mouse_position(float,float);
+    void key_press(int);
+    void key_release(int);
 
 };
 

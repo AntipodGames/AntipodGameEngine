@@ -115,6 +115,7 @@ void QSystem::keyPressEvent(QKeyEvent *event){
         _left_pressed = true;
     if(event->key() == Qt::Key_D || event->key() == Qt::Key_Right)
         _right_pressed = true;
+    emit sig_key_pressed(event->key());
 }
 
 void QSystem::keyReleaseEvent(QKeyEvent *event){
@@ -126,6 +127,7 @@ void QSystem::keyReleaseEvent(QKeyEvent *event){
         _left_pressed = false;
     if(event->key() == Qt::Key_D || event->key() == Qt::Key_Right)
         _right_pressed = false;
+    emit sig_key_released(event->key());
 }
 
 void QSystem::mouseMoveEvent(QMouseEvent *event){

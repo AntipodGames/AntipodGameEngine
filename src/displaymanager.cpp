@@ -4,7 +4,7 @@
 
 using namespace age;
 
-void DisplayManager::storeProp(Entity::_property_t prop){
+void DisplayManager::storeProp(_property_t prop){
     _prop_list.push(prop);
 }
 
@@ -33,6 +33,7 @@ void DisplayManager::displayColliderOverlay(const QuadTree<EmptyCollider>::Const
             else if(collider->get_collider_type() == EmptyCollider::CIRCLE){
                 std::shared_ptr<sf::CircleShape> circle(new sf::CircleShape(
                                                             std::static_pointer_cast<CircleCollider>(collider)->get_radius()));
+                circle->setOrigin(circle->getRadius(),circle->getRadius());
                 circle->setPosition(sf::Vector2f(collider->get_center()[0],collider->get_center()[1]));
                 circle->setFillColor(sf::Color::Transparent);
                 circle->setOutlineColor(sf::Color::Red);
@@ -58,7 +59,7 @@ void DisplayManager::display(age::QSystem &window,AnimatedManager& am, TextureMa
         std::cerr << "no entity to display !" << std::endl;
     }
 
-    Entity::_property_t current_prop;
+    _property_t current_prop;
 
     if(_scene.layers.empty()){
         while(!_prop_list.empty()){
@@ -69,9 +70,9 @@ void DisplayManager::display(age::QSystem &window,AnimatedManager& am, TextureMa
         }
     }
 
-    std::queue<Entity::_property_t> tmp_list;
+    std::queue<_property_t> tmp_list;
 
-    for(size_t i = 0; i < _scene.layers.size(); i++){
+    for(int i = 0; i < _scene.layers.size(); i++){
 
         sf::Sprite tmp(*tm.GetTexture(_scene.layers[i]));
         tmp.setScale(window.get_size()[0]/(float)tm.GetTexture(_scene.layers[i])->getSize().x,window.get_size()[1]/(float)tm.GetTexture(_scene.layers[i])->getSize().y);
@@ -89,7 +90,7 @@ void DisplayManager::display(age::QSystem &window,AnimatedManager& am, TextureMa
             }
         }
         _prop_list = tmp_list;
-        tmp_list = std::queue<Entity::_property_t>();
+        tmp_list = std::queue<_property_t>();
     }
 
     for(auto& ol : _overlay_list){
@@ -97,7 +98,7 @@ void DisplayManager::display(age::QSystem &window,AnimatedManager& am, TextureMa
     }
 }
 
-void DisplayManager::_apply(AnimatedManager &am, Entity::_property_t prop){
+void DisplayManager::_apply(AnimatedManager &am, _property_t prop){
     std::string name = TO_STRING(prop["sprite"])->value;
     am.get(name)->setFrame(TO_INTEGER(prop["frame"])->value);
     am.get(name)->setPosition(TO_DOUBLE(prop["x"])->value,

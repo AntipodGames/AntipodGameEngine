@@ -38,14 +38,14 @@ public:
     }
 
 public slots:
-    void storeProp(Entity::_property_t prop);
+    void storeProp(_property_t prop);
     void displayColliderOverlay(const QuadTree<EmptyCollider>::ConstPtr qt);
 
 private:
-    std::queue<Entity::_property_t> _prop_list;
+    std::queue<_property_t> _prop_list;
     std::vector<std::shared_ptr<sf::Drawable>> _overlay_list;
 
-    void _apply(AnimatedManager& am, Entity::_property_t prop);
+    void _apply(AnimatedManager& am, _property_t prop);
 
     Scene _scene;
 };
